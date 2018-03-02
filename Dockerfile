@@ -1,4 +1,3 @@
-
 # Builds a docker gui image
 FROM hurricane/dockergui:x11rdp1.3
 
@@ -34,14 +33,19 @@ echo 'deb http://archive.ubuntu.com/ubuntu trusty-updates main universe restrict
 # Install packages needed for app
 export DEBCONF_NONINTERACTIVE_SEEN=true DEBIAN_FRONTEND=noninteractive && \
 apt-get update && \
-apt-get install -y ImageMagick && \
+apt-get install -y ImageMagick python-djvu pdftohtml && \
 #########################################
 ##          GUI APP INSTALL            ##
 #########################################
 
 # Install steps for X app
 wget -nv -O- https://raw.githubusercontent.com/kovidgoyal/calibre/master/setup/linux-installer.py | sudo python -c "import sys; main=lambda:sys.stderr.write('Download failed\n'); exec(sys.stdin.read()); main()" && \
-mkdir -p /etc/my_init.d
+mkdir -p /etc/my_init.d && \ 
+
+# Clean-up
+rm -fr /var/lib/apt/lists/* && \
+apt-get clean
+
 ADD firstrun.sh /etc/my_init.d/firstrun.sh
 RUN chmod +x /etc/my_init.d/firstrun.sh
 
@@ -54,4 +58,5 @@ COPY startapp.sh /startapp.sh
 
 # Place whater volumes and ports you want exposed here:
 VOLUME ["/config"]
+VOLUME ["/library"]
 EXPOSE 3389 8080 8081
